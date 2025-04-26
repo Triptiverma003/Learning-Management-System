@@ -1,20 +1,19 @@
 import { Webhook } from "svix";
 import User from "../models/user.js";
 
-
-//Api Controller Function to manage Clerk user with db
-
-export const clerkWebHooks = async(req, res)=>{
-    try{
-        const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET)
-
-        await whook.verify(JSON.stringify(req.body) , {
+export const clerkWebHooks = async (req, res) => {
+    try {
+        const payload = req.body.toString(); // raw body as string
+        const headers = {
             "svix-id": req.headers["svix-id"],
             "svix-timestamp": req.headers["svix-timestamp"],
             "svix-signature": req.headers["svix-signature"]
-        })
+        };
 
-        const {data , type} = req.body
+        const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
+        const evt = wh.verify(payload, headers);  // verify raw body!
+
+        const { data, type } = evt;
 
         switch (type) {
             case 'user.created': {
@@ -25,32 +24,30 @@ export const clerkWebHooks = async(req, res)=>{
                     imageUrl: data.image_url,
                 }
                 await User.create(userData)
-                    res.json({})
-                    break;
+                res.status(200).json({})
+                break;
             }
-            
-            case 'user.updated':{
+            case 'user.updated': {
                 const userData = {
-                    email: data.email_address[0].email_address,
+                    email: data.email_addresses[0].email_address,
                     name: data.first_name + " " + data.last_name,
                     imageUrl: data.image_url,
                 }
-
                 await User.findByIdAndUpdate(data.id, userData)
-                res.json({})
+                res.status(200).json({})
                 break;
             }
-            case 'user.deleted':{
+            case 'user.deleted': {
                 await User.findByIdAndDelete(data.id)
-                res.json({})
+                res.status(200).json({})
                 break;
             }
-        
             default:
-                break;
+                console.log('Unhandled event type', type);
+                res.status(400).json({ message: "Unhandled event type" });
         }
-    }
-    catch (error){
-        res.json({success: false, message: error.message})
+    } catch (error) {
+        console.error('Webhook error:', error);
+        res.status(400).json({ success: false, message: error.message });
     }
 }
