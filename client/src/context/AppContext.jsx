@@ -75,6 +75,7 @@ export const AppContextProvider = (props)=>{
             logToken()
         }
     } , [user])
+
     const value = {
         currency , allCourses , navigate , CalculateRating , isEducator , CalculateNoOfLectures ,
         CalculateCourseDuration , CalculateChapterTime , enrolledCourse , FetchUserEnrolledCourses
