@@ -59,10 +59,26 @@ export const clerkWebHooks = async(req, res)=>{
 }
 
 
+import Stripe from 'stripe';
+import { Purchase } from '../models/purchase.js';
+import User from '../models/user.js';
+import Course from '../models/Course.js';
+
+console.log('▶ stripeWebhooks controller loaded');
+
+// Initialize Stripe
 const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export const stripeWebhooks = async (request, response) => {
   console.log('▶ Received Stripe webhook');
+  console.log('▶ Headers:', request.headers);
+  // Attempt to log raw body (buffer or string)
+  try {
+    console.log('▶ Raw body:', request.body && request.body.toString());
+  } catch (e) {
+    console.log('▶ Unable to convert body to string');
+  }
+
   const sig = request.headers['stripe-signature'];
   let event;
 
@@ -78,13 +94,31 @@ export const stripeWebhooks = async (request, response) => {
     return response.status(400).send(`Webhook Error: ${err.message}`);
   }
 
+  // Handle multiple possible event types
   switch (event.type) {
-    case 'checkout.session.completed': {
-      console.log('▶ Handling checkout.session.completed');
-      const session = event.data.object;
-      console.log('▶ Session object:', session);
-      const purchaseId = session.metadata.purchaseId;
+    case 'checkout.session.completed':
+    case 'payment_intent.succeeded': {
+      console.log('▶ Handling session/payment succeeded event:', event.type);
+
+      // Determine session object
+      let session;
+      if (event.type === 'checkout.session.completed') {
+        session = event.data.object;
+      } else {
+        // payment_intent.succeeded -> fetch session list
+        const paymentIntent = event.data.object;
+        console.log('▶ PaymentIntent:', paymentIntent);
+        const sessions = await stripeInstance.checkout.sessions.list({ payment_intent: paymentIntent.id });
+        session = sessions.data[0];
+        console.log('▶ Fetched session via list:', session);
+      }
+
+      const purchaseId = session.metadata && session.metadata.purchaseId;
       console.log('▶ Extracted purchaseId:', purchaseId);
+      if (!purchaseId) {
+        console.error('❌ No purchaseId found in metadata');
+        break;
+      }
 
       try {
         const purchaseData = await Purchase.findById(purchaseId);
@@ -106,21 +140,18 @@ export const stripeWebhooks = async (request, response) => {
         await purchaseData.save();
         console.log('▶ Updated purchase status to completed');
       } catch (err) {
-        console.error('❌ Error processing checkout.session.completed:', err);
+        console.error('❌ Error processing success event:', err);
       }
       break;
     }
-
     case 'payment_intent.payment_failed': {
       console.log('▶ Handling payment_intent.payment_failed');
       const paymentIntent = event.data.object;
-      console.log('▶ PaymentIntent object:', paymentIntent);
-      const paymentIntentId = paymentIntent.id;
-      console.log('▶ PaymentIntent ID:', paymentIntentId);
+      console.log('▶ PaymentIntent for failed:', paymentIntent);
 
       try {
-        const sessions = await stripeInstance.checkout.sessions.list({ payment_intent: paymentIntentId });
-        console.log('▶ Sessions list:', sessions.data);
+        const sessions = await stripeInstance.checkout.sessions.list({ payment_intent: paymentIntent.id });
+        console.log('▶ Sessions list for failed:', sessions.data);
         const purchaseId = sessions.data[0].metadata.purchaseId;
         console.log('▶ Extracted purchaseId for failed:', purchaseId);
 
@@ -135,7 +166,6 @@ export const stripeWebhooks = async (request, response) => {
       }
       break;
     }
-
     default:
       console.log(`Unhandled event type: ${event.type}`);
   }
