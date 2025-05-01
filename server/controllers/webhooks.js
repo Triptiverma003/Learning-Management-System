@@ -59,11 +59,6 @@ export const clerkWebHooks = async(req, res)=>{
 }
 
 
-import Stripe from 'stripe';
-import { Purchase } from '../models/purchase.js';
-import User from '../models/user.js';
-import Course from '../models/Course.js';
-
 console.log('▶ stripeWebhooks controller loaded');
 
 // Initialize Stripe
