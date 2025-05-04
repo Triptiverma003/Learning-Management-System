@@ -1,5 +1,1 @@
-![Hero Section](./LMS-SS-PREVIEW/Page-1.JPG)
-![testimonial page]("./LMS-SS-PREVIEW/Page-2.JPG")
-![Educator-Page]("C:\Users\PC\OneDrive\Pictures\LMS-SS-PREVIEW\Page-3.JPG")
-![Enroll-Now]("C:\Users\PC\OneDrive\Pictures\LMS-SS-PREVIEW\Page-4.JPG")
-![footer]("C:\Users\PC\OneDrive\Pictures\LMS-SS-PREVIEW\Page-5.JPG")
+![Page-1](https://github.com/user-attachments/assets/f4f28399-aa32-4473-bf3a-28c73882e04e)
