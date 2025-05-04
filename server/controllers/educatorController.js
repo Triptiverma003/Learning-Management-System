@@ -1,6 +1,8 @@
 import { clerkClient } from '@clerk/express';
 import Course from '../models/course.js';
 import {v2 as cloudinary} from 'cloudinary'
+import { Purchase } from '../models/purchase.js';
+import User from '../models/user.js';
 export const updateRoleToEducator = async (req, res) => {
   try {
     // Access userId from req.auth, which Clerk middleware adds
@@ -35,29 +37,34 @@ export const updateRoleToEducator = async (req, res) => {
 };
 
 //Add new Course
-export const addCourse = async(req , res)=>{
-  try{
-    const {courseData} = req.body
-    const imageFile = req.file
-    const educatorId = req.auth.userId;
-
-    if(!imageFile){
-      return res.json({success: false , message: 'Thumbnail not Attached'})
+export const addCourse = async (req, res) => {
+  try {
+    // Ensure Multer provided the file
+    const imageFile = req.file;
+    if (!imageFile) {
+      return res.json({ success: false, message: 'Thumbnail not Attached' });
     }
-    const parsedCourseData = await JSON.parse(courseData)
-    parsedCourseData.educator = educatorId
-    const newCourse = await Course.create(parsedCourseData)
-    const imageUpload =  await cloudinary.uploader.upload(imageFile.path)
-    newCourse.courseThumbnail = imageUpload.secure_url
-    await newCourse.save()
 
+    // Parse incoming JSON
+    const parsedCourseData = JSON.parse(req.body.courseData);
 
-    res.json({success: true , message: 'Course Added'})
+    // Upload to Cloudinary before creating the course
+    const imageUpload = await cloudinary.uploader.upload(imageFile.path);
 
-  }catch(error){
-    res.json({success: false , message: error.message})
+    // Assign the thumbnail URL and educator
+    parsedCourseData.courseThumbnail = imageUpload.secure_url;
+    parsedCourseData.educator       = req.auth.userId;
+
+    // Now create the course in one go
+    const newCourse = await Course.create(parsedCourseData);
+    console.log("Image file received:", req.file);
+    return res.json({ success: true, message: 'Course Added', course: newCourse });
+  } catch (error) {
+    return res.json({ success: false, message: error.message });
   }
-}
+ 
+};
+
 
 //Get Educator Courses
 export const getEducatorCourses = async(req , res)=>{

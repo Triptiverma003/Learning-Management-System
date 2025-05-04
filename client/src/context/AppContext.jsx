@@ -3,8 +3,12 @@ import { dummyCourses } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
 import humanizeDuration from "humanize-duration";
 import {useAuth , useUser} from '@clerk/clerk-react'
-export const AppContext = createContext();
-export const AppContextProvider = (props)=>{
+import axios from 'axios'
+import { toast } from "react-toastify";
+    export const AppContext = createContext();
+    export const AppContextProvider = (props)=>{
+
+    const backendUrl = import.meta.env.VITE_BACKEND_URL
     const currency = import.meta.env.VITE_CURRENCY
     const navigate = useNavigate()
 
@@ -12,12 +16,51 @@ export const AppContextProvider = (props)=>{
     const {user} = useUser()
 
     const [allCourses , setAllCourses] = useState([])
-    const [isEducator , setIsEducator] = useState(true)
+    const [isEducator , setIsEducator] = useState(false)
     const[enrolledCourse , setEnrolledCourse] = useState([])
+    const [userData , setUserData] = useState(null)
     //Fetch all courses from the server
     const fetchAllCourses = async()=>{
-        setAllCourses(dummyCourses)
+        try{
+           const {data} = await axios.get(backendUrl + '/api/course/all')
+
+           if(data.success){
+            setAllCourses(data.courses)
+           }else{
+            toast.error(data.message)
+           }
+        }catch(error){
+            toast.error('Something went wrong')
+        }
     }
+
+     // Fetch UserData 
+     const fetchUserData = async () => {
+
+        try {
+
+            if (user.publicMetadata.role === 'educator') {
+                setIsEducator(true)
+            }
+
+            const token = await getToken();
+
+            const { data } = await axios.get(backendUrl + '/api/user/data',
+                { headers: { Authorization: `Bearer ${token}` } })
+
+            if (data.success) {
+                setUserData(data.user)
+            } else (
+                toast.error(data.message)
+            )
+
+        } catch (error) {
+            toast.error(error.message)
+        }
+
+    }
+
+
 
     //function to calculate average rating
     const CalculateRating  = (course) =>{
@@ -28,7 +71,7 @@ export const AppContextProvider = (props)=>{
         course.courseRatings.forEach(rating =>{
             totalRating+=rating.rating
         })
-        return totalRating/course.courseRatings.length;
+        return Math.floor(totalRating/course.courseRatings.length);
     }
     //function to calculate course chapter time
     const CalculateChapterTime = (chapter)=>{
@@ -58,27 +101,42 @@ export const AppContextProvider = (props)=>{
 
     //Fetch user enrolled courses
 
-    const FetchUserEnrolledCourses = async ()=>{
-        setEnrolledCourse(dummyCourses)
+    const fetchUserEnrolledCourses = async () => {
+        try{
+        const token = await getToken();
+
+        const { data } = await axios.get(backendUrl + '/api/user/enrolled-courses',
+            { headers: { Authorization: `Bearer ${token}` } })
+
+        if (data.success) {
+            setEnrolledCourse(data.enrolledCourses.reverse())
+        } else (
+            toast.error(data.message)
+        )
+    } catch(error){
+        toast.error(error.message)
+
     }
+
+    }
+
+
 
     useEffect(()=>{
         fetchAllCourses()
-        FetchUserEnrolledCourses()
     },[])
 
-        const logToken = async() => {
-            console.log(await getToken())
-        }
     useEffect(() => {
         if(user){
-            logToken()
+            fetchUserData()
+            fetchUserEnrolledCourses()
         }
     } , [user])
 
     const value = {
-        currency , allCourses , navigate , CalculateRating , isEducator , CalculateNoOfLectures ,
-        CalculateCourseDuration , CalculateChapterTime , enrolledCourse , FetchUserEnrolledCourses
+        currency ,allCourses , navigate , CalculateRating , isEducator , CalculateNoOfLectures ,
+        CalculateCourseDuration , CalculateChapterTime , enrolledCourse , fetchUserEnrolledCourses ,
+        backendUrl, userData, setUserData, getToken, fetchAllCourses
     }
     return (
         <AppContext.Provider value = {value}>

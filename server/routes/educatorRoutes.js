@@ -16,7 +16,7 @@ educatorRouter.post('/add-course', upload.single('image') , protectEducator , ad
 
 educatorRouter.get('/courses' , protectEducator ,  getEducatorCourses);
 
-educatorRouter.get('/dashboard' , protectEducator ,  getEducatorCourses);
+educatorRouter.get('/dashboard' , protectEducator , educatorDashBoardData);
 
 educatorRouter.get('/enrolled-students' , protectEducator , getEnrolledStudentsData);
 

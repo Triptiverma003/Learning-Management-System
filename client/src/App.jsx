@@ -13,12 +13,14 @@ import StudentEnrolled from './Pages/educator/StudentsEnrolled'
 import DashBoard from './Pages/educator/DashBoard'
 import Navbar from './components/student/Navbar'
 import "quill/dist/quill.snow.css";
+import { ToastContainer } from 'react-toastify';
 
 const App = () => {
   const isEducatorRoute = useMatch('/educator/*');
   return (
     //yh navbar har jagah  show hoga to not show this in educator we will add something different
     <div className = 'text-default min-h-screen bg-white'>
+    <ToastContainer/>
        {!isEducatorRoute && <Navbar />}
       <Routes>
         <Route path = '/' element = {<Home/>}/>

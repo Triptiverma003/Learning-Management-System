@@ -109,7 +109,7 @@ export const purchaseCourse = async (req, res) => {
 
 //update user Course progress
 
-const updateUserCourseProgress = async () =>{
+export const updateUserCourseProgress = async (req , res) =>{
   try {
     const userId = req.auth.userId;
     const {courseId, lectureId } = req.body;
