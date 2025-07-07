@@ -17,21 +17,20 @@ await connectDB()
 await connectCloudinary()
 
 const allowedOrigins = [
-  "https://lms-vert-theta.vercel.app",
-  "https://lms-i1qg.vercel.app"
+  "https://lms-vert-theta.vercel.app"
 ]
 
 //Middlewares
 app.use(cors({
-  origin: function(origin, callback) {
+  origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true)
+      callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"))
+      callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true
-}))
+}));
 app.use(express.json()); 
 app.use(clerkMiddleware())
 
