@@ -18,7 +18,7 @@ await connectCloudinary()
 
 //Middlewares
 app.use(cors({
-    origin: "https://lms-i1qg.vercel.app",
+    origin: "https://lms-vert-theta.vercel.app",
     credentials: true
 }))
 app.use(express.json()); 
