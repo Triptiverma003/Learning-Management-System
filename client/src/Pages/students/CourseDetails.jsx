@@ -25,7 +25,7 @@ const CourseDetails = () => {
 
     try {
 
-      const { data } = await axios.get(backendUrl + '/api/course/' + id)
+      const { data } = await axios.get(backendUrl + 'api/course/' + id)
 
       if (data.success) {
         setCourseData(data.courseData)
@@ -65,7 +65,7 @@ const CourseDetails = () => {
 
       const token = await getToken();
 
-      const { data } = await axios.post(backendUrl + '/api/user/purchase',
+      const { data } = await axios.post(backendUrl + 'api/user/purchase',
         { courseId: courseData._id },
         { headers: { Authorization: `Bearer ${token}` } }
       )

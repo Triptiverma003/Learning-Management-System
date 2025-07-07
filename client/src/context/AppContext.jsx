@@ -22,7 +22,7 @@ import { toast } from "react-toastify";
     //Fetch all courses from the server
     const fetchAllCourses = async()=>{
         try{
-           const {data} = await axios.get(backendUrl + '/api/course/all')
+           const {data} = await axios.get(backendUrl + 'api/course/all')
 
            if(data.success){
             setAllCourses(data.courses)
@@ -45,7 +45,7 @@ import { toast } from "react-toastify";
 
             const token = await getToken();
 
-            const { data } = await axios.get(backendUrl + '/api/user/data',
+            const { data } = await axios.get(backendUrl + 'api/user/data',
                 { headers: { Authorization: `Bearer ${token}` } })
 
             if (data.success) {
@@ -105,7 +105,7 @@ import { toast } from "react-toastify";
         try{
         const token = await getToken();
 
-        const { data } = await axios.get(backendUrl + '/api/user/enrolled-courses',
+        const { data } = await axios.get(backendUrl + 'api/user/enrolled-courses',
             { headers: { Authorization: `Bearer ${token}` } })
 
         if (data.success) {

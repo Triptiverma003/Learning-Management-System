@@ -54,7 +54,7 @@ const Player = ({ }) => {
 
       const token = await getToken()
 
-      const { data } = await axios.post(backendUrl + '/api/user/update-course-progress',
+      const { data } = await axios.post(backendUrl + 'api/user/update-course-progress',
         { courseId, lectureId },
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -78,7 +78,7 @@ const Player = ({ }) => {
 
       const token = await getToken()
 
-      const { data } = await axios.post(backendUrl + '/api/user/get-course-progress',
+      const { data } = await axios.post(backendUrl + 'api/user/get-course-progress',
         { courseId },
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -101,7 +101,7 @@ const Player = ({ }) => {
 
       const token = await getToken()
 
-      const { data } = await axios.post(backendUrl + '/api/user/add-rating',
+      const { data } = await axios.post(backendUrl + 'api/user/add-rating',
         { courseId, rating },
         { headers: { Authorization: `Bearer ${token}` } }
       )
